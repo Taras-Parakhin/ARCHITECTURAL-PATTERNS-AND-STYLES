@@ -1,0 +1,240 @@
+<div class="flex gap-4">
+  @if (filters.Exclude) {
+    <mat-chip color="primary">
+      <span class="m-5"><strong>Exclude</strong></span>
+      <button matChipRemove (click)="onChangeFilter('Exclude')">
+        <mat-icon>cancel</mat-icon>
+      </button>
+    </mat-chip>
+  }
+  @if (filters.SearchText) {
+    <mat-chip color="primary">
+    <span class="m-5">Search: <strong>{{filters.SearchText}}</strong></span>
+    <button matChipRemove (click)="onChangeFilter('SearchText')">
+      <mat-icon>cancel</mat-icon>
+    </button>
+    </mat-chip>
+  }
+
+  @switch (type) {
+    @case (filtersType.Devices) {
+      @if (filters?.PlatformId?.length) {
+        <mat-chip color="primary">
+          <span class="m-5">Device type: <strong>{{viewPlatforms}}</strong></span>
+          <button matChipRemove (click)="onChangeFilter('PlatformId')">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      }
+      @if (filters.DeviceIsActive !== null && filters.DeviceIsActive !== undefined) {
+        <mat-chip color="primary">
+          <span class="m-5">Status: <strong>{{filters.DeviceIsActive ? 'Active' : 'Blocked'}}</strong></span>
+          <button matChipRemove (click)="onChangeFilter('DeviceIsActive')">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      }
+    }
+
+    @case (filtersType.Notifications) {
+      @if (filters.IsReceived !== null && filters.IsReceived !== undefined) {
+        <mat-chip color="primary">
+          <span class="m-5">Notifications: <strong>{{filters.IsReceived ? 'Received' : 'Not Received'}}</strong></span>
+          <button matChipRemove (click)="onChangeFilter('IsReceived')">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      }
+    }
+
+    @case (filtersType.Subscribers) {
+      @if (filters.State !== null && filters.State !== undefined) {
+        <mat-chip color="primary">
+          <span class="m-5">State: <strong>{{filters.State ? 'Active' : 'Blocked'}}</strong></span>
+          <button matChipRemove (click)="onChangeFilter('State')">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      }
+    }
+
+    @case (filtersType.ContentPackages) {
+      @if (filters?.ContentTypeId?.length) {
+        <mat-chip color="primary">
+          <span class="m-5">Package type: <strong>{{viewContentTypes}}</strong></span>
+          <button matChipRemove (click)="onChangeFilter('ContentTypeId')">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      }
+      @if (filters.State !== null && filters.State !== undefined) {
+        <mat-chip color="primary">
+          <span class="m-5">State: <strong>{{getContentState}}</strong></span>
+          <button matChipRemove (click)="onChangeFilter('State')">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      }
+    }
+
+    @case (filtersType.Users) {
+      @if (filters?.Roles?.length) {
+        <mat-chip color="primary">
+          <span class="m-5">User role: <strong>{{viewRoles}}</strong></span>
+          <button matChipRemove (click)="onChangeFilter('Roles')">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      }
+      @if (filters.IsActive !== null && filters.IsActive !== undefined) {
+        <mat-chip color="primary">
+          <span class="m-5">State: <strong>{{filters.IsActive ? 'Active' : 'Inactive'}}</strong></span>
+          <button matChipRemove (click)="onChangeFilter('IsActive')">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      }
+    }
+
+    @case (filtersType.SubscriberLogs) {
+      @if (filters.PackageName || filters.PackageId) {
+        <mat-chip color="primary">
+          <span class="flex align-center m-5">Content Package:
+            <app-content-type-icon [contentTypeId]="viewContentPackage?.ContentTypeId"></app-content-type-icon>
+            <strong>{{viewContentPackage ? viewContentPackage.Name : filters.PackageName}}</strong>
+          </span>
+          <button matChipRemove (click)="onChangeFilter('PackageName', 'PackageId')">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      }
+      @if (filters.SubscriberName || filters.SubscriberId) {
+        <mat-chip color="primary">
+          <span class="m-5">Subscriber: <strong>{{viewSubscriber ? viewSubscriber : filters.SubscriberName}}</strong></span>
+          <button matChipRemove (click)="onChangeFilter('SubscriberName', 'SubscriberId')">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      }
+      @if (filters.DeviceName || filters.DeviceId) {
+        <mat-chip color="primary">
+          <span class="m-5">Device: <strong>{{viewDevice ? viewDevice : filters.DeviceName}}</strong></span>
+          <button matChipRemove (click)="onChangeFilter('DeviceName', 'DeviceId')">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      }
+      @if (filters.ActionIds && filters.ActionIds.length) {
+        <mat-chip color="primary">
+          <span class="m-5">Actions: <strong>{{viewAction}}</strong></span>
+          <button matChipRemove (click)="onChangeFilter('ActionIds')">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      }
+      @if (filters.StartPeriod && filters.EndPeriod) {
+        <mat-chip color="primary">
+          <span class="m-5">Period: <strong>{{viewDateTimeRange}}</strong></span>
+          <button matChipRemove (click)="onChangeFilter('StartPeriod', 'EndPeriod')">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      }
+      @if (filters.Duration && filters.Unit) {
+        <mat-chip color="primary">
+          <span class="m-5">Duration: <strong>{{viewDuration}}</strong></span>
+          <button matChipRemove (click)="onChangeFilter('Duration', 'Unit', 'StartPeriod')">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      }
+    }
+
+    @case (filtersType.AdminLogs) {
+      @if (filters.ActionType) {
+        <mat-chip color="primary">
+          <span class="m-5">Action Type: <strong>{{actionTypeEnum[filters.ActionType]}}</strong></span>
+          <button matChipRemove (click)="onChangeFilter('ActionType')">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      }
+      @if (filters.EntityType && filters.EntityType.length) {
+        <mat-chip color="primary">
+          <span class="m-5">Entity Types: <strong>{{viewEntityType}}</strong></span>
+          <button matChipRemove (click)="onChangeFilter('EntityType')">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      }
+      @if (filters.StartPeriod && filters.EndPeriod) {
+        <mat-chip color="primary">
+          <span class="m-5">Period: <strong>{{viewDateTimeRange}}</strong></span>
+          <button matChipRemove (click)="onChangeFilter('StartPeriod', 'EndPeriod')">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      }
+      @if (filters.Duration && filters.Unit) {
+        <mat-chip color="primary">
+          <span class="m-5">Duration: <strong>{{viewDuration}}</strong></span>
+          <button matChipRemove (click)="onChangeFilter('Duration', 'Unit')">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      }
+    }
+
+    @case (filtersType.DeviceLogs) {
+      @if (filters.StartPeriod && filters.EndPeriod) {
+        <mat-chip color="primary">
+          <span class="m-5">Period: <strong>{{viewDateTimeRange}}</strong></span>
+          <button matChipRemove (click)="onChangeFilter('StartPeriod', 'EndPeriod')">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      }
+      @if (filters.Duration && filters.Unit) {
+        <mat-chip color="primary">
+          <span class="m-5">Duration: <strong>{{viewDuration}}</strong></span>
+          <button matChipRemove (click)="onChangeFilter('Duration', 'Unit')">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      }
+    }
+
+    @case (filtersType.Dashboard) {
+      @if (filters.StartPeriod && filters.EndPeriod) {
+        <mat-chip color="primary">
+          <span class="m-5"><strong>{{viewDateTimeRange}}</strong></span>
+        </mat-chip>
+      }
+      @if (filters.Duration && filters.Unit) {
+        <mat-chip color="primary">
+          <span class="m-5">Duration: <strong>{{viewDuration}}</strong></span>
+        </mat-chip>
+      }
+    }
+
+    @case (filtersType.DataBlocks) {
+      @if (filters.Language && filters.Language.length) {
+        <mat-chip color="primary">
+          <span class="flex gap-5">
+            <span class="flex align-center gap-10">Language:
+              @for (flag of viewFlag; track flag; let i = $index) {
+                @if (flag) {
+                  <mat-icon [ngClass]="flag"></mat-icon>
+                }
+                <strong>{{filters.Language[i]}}</strong>
+              }
+            </span>
+          </span>
+          <button matChipRemove (click)="onChangeFilter('Language')">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      }
+    }
+  }
+</div>

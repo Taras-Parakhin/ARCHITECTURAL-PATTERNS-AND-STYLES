@@ -1,0 +1,351 @@
+<mat-card class="flex-auto full-h">
+  <mat-card-header class="justify-between align-center">
+    <mat-card-title>
+      <div class="flex align-center gap-10">
+        <span>{{ isEditMode ? "Edit" : "Create" }} Data Block</span>
+      </div>
+    </mat-card-title>
+
+    <div class="flex gap-10">
+      <button mat-raised-button color="primary" (click)="addGroup()">Add group</button>
+      @if (isEditMode) {
+        <button mat-raised-button [matMenuTriggerFor]="menu">
+          <span>Actions</span>
+          <mat-icon iconPositionEnd>arrow_drop_down</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu" xPosition="before">
+          <button (click)="onAddAssignments()" mat-menu-item>Assignments</button>
+          <button mat-menu-item (click)="onDelete(dataBlockConfig)">Delete</button>
+        </mat-menu>
+      }
+      <a mat-raised-button [routerLink]="['/data-blocks']">Cancel</a>
+      <button
+        mat-raised-button
+        color="primary"
+        [disabled]="!form.dirty && !isGroupFieldMoved"
+        (click)="onSubmit()"
+      >
+        {{ isEditMode ? "Save" : "Create" }}
+      </button>
+    </div>
+  </mat-card-header>
+
+  <mat-divider></mat-divider>
+
+  <mat-card-content>
+    <form [formGroup]="form">
+      <div class="flex justify-between">
+        <div class="flex gap-20">
+          <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Order</mat-label>
+            <input matInput type="number" min="1" formControlName="Order">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Data block name</mat-label>
+            <input formControlName="Name" matInput>
+            @if (hasControlError(form.get('Name'), 'required')) {
+              <mat-error class="error">Name is required</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <mat-form-field>
+          <mat-label>Data block language</mat-label>
+          <mat-select formControlName="Language" [compareWith]="compareFn">
+            @for (option of languageOptions; track option.value) {
+              <mat-option [value]="option">
+                @if (option.value) {
+                  <mat-icon [ngClass]="option.flag"></mat-icon>
+                }
+                {{ option.label }}
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <mat-form-field class="full-w">
+        <mat-label>Data block description</mat-label>
+        <input formControlName="Description" matInput>
+      </mat-form-field>
+
+      <mat-divider></mat-divider>
+
+      <div class="mt-20" formArrayName="Groups">
+        <mat-accordion cdkDropList (cdkDropListDropped)="dropGroup($event)">
+          @for (userProfileGroup of getGroupControls(); track userProfileGroup.value; let i = $index) {
+            <mat-expansion-panel hideToggle expanded="true" [formGroupName]="i" cdkDrag>
+              <mat-expansion-panel-header>
+                <mat-panel-title class="gap-20">
+                  <div cdkDragHandle>
+                    <mat-icon matTooltip="Click or double tap to move" matTooltipPosition="left" fontIcon="import_export"></mat-icon>
+                  </div>
+
+                  <span>
+                    <label for="groupName"></label>
+                    <input
+                      type="text"
+                      id="groupName"
+                      maxlength="128"
+                      placeholder="* Enter group name here"
+                      (click)="$event.stopPropagation()"
+                      (keydown)="$event.stopPropagation()"
+                      formControlName="Name"
+                      required
+                      class="name">
+                    @if (hasError(userProfileGroup, 'Name', 'required')) {
+                      <mat-error class="error">Name is required</mat-error>
+                    }
+                    @if (hasError(userProfileGroup, 'Name', 'unique')) {
+                      <mat-error class="error">Name is already existed</mat-error>
+                    }
+                  </span>
+                </mat-panel-title>
+                <button mat-icon-button matTooltip="Delete" (click)="removeGroup(i); $event.stopPropagation(); $event.preventDefault()">
+                  <mat-icon fontIcon="delete_forever"></mat-icon>
+                </button>
+              </mat-expansion-panel-header>
+
+              <div class="flex gap-10">
+                <mat-form-field>
+                  <mat-label>Group icon</mat-label>
+                  <input
+                    type="text"
+                    placeholder="Pick one"
+                    matInput
+                    formControlName="Icon"
+                    #groupIcon
+                    [matAutocomplete]="auto">
+                  <mat-autocomplete [autoActiveFirstOption]="getControlValue(userProfileGroup, 'Icon')" #auto="matAutocomplete">
+                    @for (icon of getAutocompleteIcons(groupIcon.value); track icon) {
+                      <mat-option [value]="icon">
+                        <mat-icon [fontIcon]="icon"></mat-icon>
+                        <span>{{icon}}</span>
+                      </mat-option>
+                    }
+                  </mat-autocomplete>
+                  @if (hasError(userProfileGroup, 'Icon', 'isInclude')) {
+                    <mat-error class="error">Icon name is incorrect</mat-error>
+                  }
+                </mat-form-field>
+
+                <mat-form-field class="full-w">
+                  <mat-label>Group description</mat-label>
+                  <input formControlName="Description" matInput>
+                </mat-form-field>
+              </div>
+
+              <ng-container formArrayName="Fields">
+                <mat-accordion cdkDropList (cdkDropListDropped)="dropField($event, userProfileGroup)">
+                  @for (userProfileField of getFieldControls(userProfileGroup); track userProfileField.value; let j = $index) {
+                    <mat-expansion-panel hideToggle expanded="true" [formGroupName]="j" cdkDrag>
+                      <mat-expansion-panel-header>
+                        <mat-panel-title class="gap-20">
+                          <div cdkDragHandle>
+                            <mat-icon matTooltip="Click or double tap to move" matTooltipPosition="left" fontIcon="import_export"></mat-icon>
+                          </div>
+
+                          <span>
+                            <label for="fieldName"></label>
+                            <input
+                              type="text"
+                              id="fieldName"
+                              maxlength="128"
+                              placeholder="* Enter field name here"
+                              (click)="$event.stopPropagation()"
+                              (keydown)="$event.stopPropagation()"
+                              formControlName="Name"
+                              required
+                              class="name">
+                            @if (hasError(userProfileField, 'Name', 'required')) {
+                              <mat-error class="error">Name is required</mat-error>
+                            }
+                            @if (hasError(userProfileField, 'Name', 'unique')) {
+                              <mat-error class="error">Name is already existed</mat-error>
+                            }
+                          </span>
+                        </mat-panel-title>
+
+                        <div class="flex align-center gap-40">
+                          <span>
+                            Type:
+                            <strong>{{ getControlValue(userProfileField, 'Type') }}</strong>
+                          </span>
+                          <button mat-icon-button matTooltip="Delete" (click)="removeField(userProfileGroup, i, j); $event.stopPropagation(); $event.preventDefault()">
+                            <mat-icon fontIcon="delete_forever"></mat-icon>
+                          </button>
+                        </div>
+                      </mat-expansion-panel-header>
+
+                      <div class="flex gap-10">
+                        <mat-form-field>
+                          <mat-label>Icon</mat-label>
+                          <input
+                            type="text"
+                            placeholder="Pick one"
+                            matInput
+                            formControlName="Icon"
+                            #fieldIcon
+                            [matAutocomplete]="auto">
+                          <mat-autocomplete [autoActiveFirstOption]="getControlValue(userProfileGroup, 'Icon')" #auto="matAutocomplete">
+                            @for (icon of getAutocompleteIcons(fieldIcon.value); track icon) {
+                              <mat-option [value]="icon">
+                                <mat-icon [fontIcon]="icon"></mat-icon>
+                                <span>{{icon}}</span>
+                              </mat-option>
+                            }
+                          </mat-autocomplete>
+                          @if (hasError(userProfileField, 'Icon', 'isInclude')) {
+                            <mat-error class="error">Icon name is incorrect</mat-error>
+                          }
+                        </mat-form-field>
+
+                        @if (getControlValue(userProfileField, 'Type') === fieldTypes.string || getControlValue(userProfileField, 'Type') === fieldTypes.number || getControlValue(userProfileField, 'Type') === fieldTypes.image) {
+                          @if (getControlValue(userProfileField, 'Type') !== fieldTypes.image) {
+                            <mat-form-field>
+                              <mat-label>{{getControlValue(userProfileField, 'Type') === fieldTypes.string ? 'Min length' : 'Min value'}}</mat-label>
+                              <input type="number" min="1" formControlName="MinValue" matInput>
+                              @if (hasError(userProfileField, 'MinValue', 'isMinGreaterMax')) {
+                                <mat-error class="error">Min {{getControlValue(userProfileField, 'Type') === fieldTypes.string ? 'length' : 'value'}} should be less than max {{getControlValue(userProfileField, 'Type') === fieldTypes.string ? 'length' : 'value'}}</mat-error>
+                              }
+                            </mat-form-field>
+                          }
+
+                          <mat-form-field>
+                            <mat-label>
+                              @if (getControlValue(userProfileField, 'Type') === fieldTypes.string) {
+                                Max length
+                              } @else if (getControlValue(userProfileField, 'Type') === fieldTypes.image) {
+                                Max size in MB
+                              } @else {
+                                Max value
+                              }
+                            </mat-label>
+                            <input type="number" min="1" formControlName="MaxValue" matInput>
+                          </mat-form-field>
+                        }
+
+                        @if (getControlValue(userProfileField, 'Type') === fieldTypes.date) {
+                          <mat-form-field>
+                            <mat-label>Min date</mat-label>
+                            <input [owlDateTimeTrigger]="dt1" [owlDateTime]="dt1" matInput formControlName="MinValue">
+                            <owl-date-time [pickerType]="'calendar'" #dt1></owl-date-time>
+                            @if (hasError(userProfileField, 'MinValue', 'isMinGreaterMax')) {
+                              <mat-error class="error">Min value should be less than max value</mat-error>
+                            }
+                          </mat-form-field>
+
+                          <mat-form-field>
+                            <mat-label>Max date</mat-label>
+                            <input [owlDateTimeTrigger]="dt2" [owlDateTime]="dt2" matInput formControlName="MaxValue">
+                            <owl-date-time [pickerType]="'calendar'" #dt2></owl-date-time>
+                          </mat-form-field>
+                        }
+
+                        @if (getControlValue(userProfileField, 'Type') === fieldTypes.time) {
+                          <mat-form-field>
+                            <mat-label>Min time</mat-label>
+                            <input [owlDateTimeTrigger]="dt3" [owlDateTime]="dt3" matInput formControlName="MinValue">
+                            <owl-date-time [pickerType]="'timer'" #dt3></owl-date-time>
+                            @if (hasError(userProfileField, 'MinValue', 'isMinGreaterMax')) {
+                              <mat-error class="error">Min value should be less than max value</mat-error>
+                            }
+                          </mat-form-field>
+
+                          <mat-form-field>
+                            <mat-label>Max time</mat-label>
+                            <input [owlDateTimeTrigger]="dt4" [owlDateTime]="dt4" matInput formControlName="MaxValue">
+                            <owl-date-time [pickerType]="'timer'" #dt4></owl-date-time>
+                          </mat-form-field>
+                        }
+
+                        @if (getControlValue(userProfileField, 'Type') === fieldTypes.datetime) {
+                          <mat-form-field>
+                            <mat-label>Min datetime</mat-label>
+                            <input [owlDateTimeTrigger]="dt5" [owlDateTime]="dt5" matInput formControlName="MinValue">
+                            <owl-date-time #dt5></owl-date-time>
+                            @if (hasError(userProfileField, 'MinValue', 'isMinGreaterMax')) {
+                              <mat-error class="error">Min value should be less than max value</mat-error>
+                            }
+                          </mat-form-field>
+
+                          <mat-form-field>
+                            <mat-label>Max datetime</mat-label>
+                            <input [owlDateTimeTrigger]="dt6" [owlDateTime]="dt6" matInput formControlName="MaxValue">
+                            <owl-date-time #dt6></owl-date-time>
+                          </mat-form-field>
+                        }
+
+                        @if (getControlValue(userProfileField, 'Type') !== fieldTypes.image) {
+                          <mat-form-field>
+                            <mat-label>Default value</mat-label>
+                            <input formControlName="DefaultValue" matInput>
+                          </mat-form-field>
+                        }
+                      </div>
+
+                      @if (hasError(userProfileField, 'MinValue', 'isMinGreaterMax')) {
+                        <div class="h-20"></div>
+                      }
+
+                      <div class="flex gap-10">
+                        @if (getControlValue(userProfileField, 'Type') === fieldTypes.multiselect || getControlValue(userProfileField, 'Type') === fieldTypes.dropdown) {
+                          <mat-form-field class="full-w">
+                            <mat-label>Allowed values</mat-label>
+                            <input formControlName="AllowedValues" matInput>
+                            @if (hasError(userProfileField, 'AllowedValues', 'required')) {
+                              <mat-error class="error">Values are required</mat-error>
+                            }
+                            @if (hasError(userProfileField, 'AllowedValues', 'wordCount')) {
+                              <mat-error class="error">Should be at least two comma separated values</mat-error>
+                            }
+                          </mat-form-field>
+                        }
+
+                        @if (getControlValue(userProfileField, 'Type') === fieldTypes.string) {
+                          <mat-form-field>
+                            <mat-label>Validator</mat-label>
+                            <input formControlName="Validator" matInput>
+                          </mat-form-field>
+
+                          <mat-form-field>
+                            <mat-label>Validation error message</mat-label>
+                            <input formControlName="ValidationErrorMessage" matInput>
+                          </mat-form-field>
+                        }
+                      </div>
+
+                      <div>
+                        <mat-checkbox formControlName="IsDisplayed">
+                          Is displayed
+                        </mat-checkbox>
+                        <mat-checkbox formControlName="IsRequired">
+                          Is required
+                        </mat-checkbox>
+                        <mat-checkbox formControlName="IsReadonly">
+                          Is readonly
+                        </mat-checkbox>
+                      </div>
+
+                      <div>
+                        <mat-form-field class="full-w">
+                          <mat-label>Description</mat-label>
+                          <textarea formControlName="Description" matInput></textarea>
+                        </mat-form-field>
+                      </div>
+                    </mat-expansion-panel>
+                  }
+                </mat-accordion>
+              </ng-container>
+
+              <div class="mt-20 flex justify-end">
+                <button type="button" mat-raised-button color="primary" (click)="addField(userProfileGroup, i); $event.stopPropagation()">Add field</button>
+              </div>
+            </mat-expansion-panel>
+          }
+        </mat-accordion>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

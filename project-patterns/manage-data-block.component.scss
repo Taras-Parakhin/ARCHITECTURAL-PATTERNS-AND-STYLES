@@ -1,0 +1,66 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  height: 100%;
+
+  mat-card {
+    width: 100%;
+    max-width: 1024px;
+    margin: 0 auto;
+  }
+
+  mat-card-header {
+    padding-bottom: 16px;
+  }
+
+  mat-card-content {
+    padding-top: 16px;
+    overflow-y: auto;
+  }
+
+  h2 {
+    margin: 0;
+  }
+
+  .tab-content {
+    padding-top: 16px;
+  }
+
+  .content-item {
+    min-width: 40%;
+  }
+
+  form {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .name {
+    border: none;
+    background-color: inherit;
+    font-size: 18px;
+
+    &:focus {
+      outline: none;
+      border-bottom: 1px solid #000000;
+    }
+
+    &::placeholder {
+      font-size: 14px;
+    }
+  }
+
+  .mt-20 {
+    margin-top: 20px;
+  }
+
+  .h-20 {
+    height: 20px;
+  }
+
+  .w-100 {
+    width: 100px;
+  }
+}
+
